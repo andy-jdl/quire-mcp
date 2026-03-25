@@ -1,0 +1,21 @@
+{
+    "name": "qr-mcp-server",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "bin": {
+        "qr-mcp-server": "./build/index.js"
+    },
+    "scripts": {
+        "build": "tsc"
+    },
+    "files": [
+        "build"
+    ],
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.27.1"
+    },
+    "devDependencies": {
+        "@types/node": "^22.19.15"
+    }
+}
