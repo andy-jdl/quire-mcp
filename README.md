@@ -1,7 +1,7 @@
 # Quire MCP
 
 ## About Quire
-(Quire)[https://quire.getty.edu/] is an open source digital publishing tool developed by Getty for creating beautiful, scholarly publications in multiple formats such as web, print and e-book. Optimized for visual imagery and designed to be widely accessible.
+[Quire](https://quire.getty.edu/) is an open source digital publishing tool developed by Getty for creating beautiful, scholarly publications in multiple formats such as web, print and e-book. Optimized for visual imagery and designed to be widely accessible.
 
 ## About Quire MCP
 Quire MCP leverages the Model Context Protocol (MCP) to let you interact with Quire through natural language conversation, without needing to use the terminal directly.
