@@ -1,32 +1,49 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { exec } from 'node:child_process';
+import { spawn } from 'child_process';
+import { homedir } from 'os';
+import { join, resolve as resolvePath } from 'path';
 const server = new McpServer({
     name: "quire",
     version: "0.1.0",
 });
-const createNewQuireProject = async (projectName, options = []) => {
+const createNewQuireProject = async (projectName, folder = '.', starterTemplate) => {
+    const resolvedFolder = folder === '.' ? process.cwd() : resolvePath(homedir(), folder);
+    const projectPath = join(resolvedFolder, projectName);
+    const starter = starterTemplate ? ` ${starterTemplate}` : '';
     return new Promise((resolve, reject) => {
-        const flags = options.join(' ');
-        exec(`quire new ${projectName} ${flags}`.trim(), (error, stdout, stderr) => {
-            if (error) {
-                reject(`Error creating project "${projectName}": ${error.message}`);
-                return;
+        const child = spawn('quire', ['new', projectPath, ...(starter ? [starter] : [])], {
+            cwd: resolvedFolder,
+            detached: false,
+            stdio: 'pipe'
+        });
+        resolve(`Started creating project "${projectName}" in "${resolvedFolder}" with options:${starter}... This may take a minute`);
+        child.on('error', (error) => {
+            console.error('Error starting quire process:', error);
+            return;
+        });
+        child.on('close', (code) => {
+            if (code === 0) {
+                console.log('Project creation process completed successfully.');
             }
-            resolve(stdout ? stdout : stderr);
+            else {
+                console.error(`Quire creation process exited with code ${code}.`);
+            }
         });
     });
 };
 server.registerTool("create_new_quire_project", {
     description: "Create a new quire project",
     inputSchema: z.object({
-        projectName: z.string().describe("The name of the new quire project")
+        projectName: z.string().describe("The name of the new quire project"),
+        folder: z.string().optional().describe("The folder where the project should be created (default is current directory)"),
+        starterTemplate: z.string().optional().describe("The starter template to use for the new project.)")
     })
-}, async ({ projectName }) => {
+}, async ({ projectName, folder, starterTemplate }) => {
     try {
         const name = projectName.replace(/\s+/g, '-');
-        await createNewQuireProject(name);
+        await createNewQuireProject(name, folder, starterTemplate);
         return {
             content: [{ type: 'text', text: `Successfully created quire project: ${name}` }]
         };
