@@ -1,9 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { spawn } from 'child_process';
+import { exec } from 'child_process';
 import { homedir } from 'os';
 import { join, resolve as resolvePath } from 'path';
+import { readdirSync, unlinkSync } from 'fs';
 
 const server = new McpServer({
     name: "quire",
@@ -15,29 +16,18 @@ const createNewQuireProject = async (projectName: string, folder: string = '.', 
     const projectPath = join(resolvedFolder, projectName);
     const starter = starterTemplate ? ` ${starterTemplate}` : '';
 
+    const command = `quire new "${projectPath}"${starter}`;
+
     return new Promise((resolve, reject) => {
-        const child = spawn('quire', ['new', projectPath, ...(starter ? [starter] : [])], { 
-            cwd: resolvedFolder,
-            detached: false, 
-            stdio: 'pipe' 
-        });
-        
-        resolve(`Started creating project "${projectName}" in "${resolvedFolder}" with options:${starter}... This may take a minute`);
-
-        child.on('error', (error) => {
-            console.error('Error starting quire process:', error);
-            return
-        });
-
-        child.on('close', (code) => {
-            if (code === 0) {
-                console.log('Project creation process completed successfully.');
-            } else {
-                console.error(`Quire creation process exited with code ${code}.`);
+        exec(command, { cwd: resolvedFolder, timeout: 60000 }, (error) => {
+            if (error) {
+                reject(`Error creating project: ${error.message}`);
+                return;
             }
-        })
-    })
-}
+            resolve(`Successfully created project "${projectName}" in "${resolvedFolder}"`);
+        });
+    });
+};
 
 server.registerTool(
     "create_new_quire_project", 
