@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { createNewQuireProjectTool } from '../commands/create.ts';
+import { createNewQuireProjectTool } from '../commands/create.js';
 
 const server = new McpServer({
     name: 'quire',
