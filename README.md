@@ -28,7 +28,9 @@ Note: Quire MCP is currently a work in progress. Phase 1 focuses on core CLI too
 - Download the latest release from Claude: 🔗[link](https://claude.ai/download)
 
 ### Starting the MCP Server
-**TODO**
+Through your terminal or IDE of choice, navigate to path where this repo is cloned and run the following commands:
+Build: `npm run build`
+Run the server: `npm run`
 
 ### Configuring your local mcp server with Claude Desktop
 You need to register the MCP server with Claude Desktop by editing its config file.
