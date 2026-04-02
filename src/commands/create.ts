@@ -41,10 +41,10 @@ export const createNewQuireProjectTool = {
             const name = projectName.replace(/\s+/g, '-');
             await createNewQuireProject(name, folder, starterTemplate);
             return {
-                content: [{ type: 'text' as const, text: `Successfully created quire project: ${name} in (${folder} || ${process.cwd()})` }]
+                content: [{ type: 'text' as const, text: `Successfully created quire project: ${name} in (${folder || process.cwd()})` }]
             };
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Quire create error';
+            const errorMessage = error instanceof Error ? error.message : String(error);
             return {
                 content: [{ type: 'text' as const, text: `Failed to create project: ${errorMessage}` }],
                 isError: true
