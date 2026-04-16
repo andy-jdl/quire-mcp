@@ -3,7 +3,7 @@ import { homedir } from 'os';
 import { join, resolve as resolvePath } from 'path';
 import { z } from 'zod';
 
-export var lastCreatedProjectPath: string | null = null;
+export var lastCreatedProjectPath: string = "";
 export const setLastCreatedProjectPath = (path: string) => {
     lastCreatedProjectPath = path;
 }

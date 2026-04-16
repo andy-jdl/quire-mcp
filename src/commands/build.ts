@@ -2,19 +2,17 @@ import { exec } from 'child_process';
 import { z } from 'zod';
 import { lastCreatedProjectPath } from './create.js';
 import { join, resolve as resolvePath } from 'path';
-import { homedir } from 'os';
+import { homedir, platform } from 'os';
 import { existsSync } from 'fs';
 
-const buildQuireProject = async (projectPath: string | undefined) => {
-    if (!projectPath) {
-        throw new Error('Project path is undefined or doesn\'t exist');
-    }
-
+const buildQuireProject = async (projectPath: string) => {
     const nodeModulesExists = existsSync(join(projectPath, 'node_modules'));
     const command = nodeModulesExists ? `npx quire build` : `npm i && npx quire build`;
+    const shell = platform() === 'win32' ? 'cmd.exe' : '/bin/sh';
+    
 
     return new Promise((resolve, reject) => {
-        exec(command, { cwd: projectPath, timeout: 120000 }, (error) => {
+        exec(command, { cwd: projectPath, timeout: 120000, shell }, (error) => {
             if (error) {
                 reject(`Error building project: ${error.message}`);
                 return;
