@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { createNewQuireProjectTool, buildQuireProjectTool, previewQuireProjectTool } from '../commands/index.js';
+import { createNewQuireProjectTool, buildQuireProjectTool, previewQuireProjectTool, stopQuirePreviewTool } from '../commands/index.js';
 
 const server = new McpServer({
     name: 'quire',
@@ -21,6 +21,11 @@ function registerTools(): void {
         previewQuireProjectTool.name,
         previewQuireProjectTool.config,
         previewQuireProjectTool.handler
+    );
+    server.registerTool(
+        stopQuirePreviewTool.name,
+        stopQuirePreviewTool.config,
+        stopQuirePreviewTool.handler
     );
 }
 
