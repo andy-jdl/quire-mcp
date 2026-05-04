@@ -25,7 +25,7 @@ const createNewQuireProject = async (
     const binaryCommand = isWindowsPlatform() ? 'npx.cmd' : 'npx';
 
     return new Promise((resolve, reject) => {
-        execFile(binaryCommand, args, {cwd: dirname(resolvedFolder), shell:false}, (error) => {
+        execFile(binaryCommand, args, {cwd: resolvedFolder, shell:false}, (error) => {
             if(error){
                 reject(error);
                 return;
