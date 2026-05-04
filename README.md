@@ -14,9 +14,8 @@ and Claude Desktop will handle the rest.
 Note: Quire MCP is currently a work in progress. Phase 1 focuses on core CLI tooling. Contributions and feedback are welcome.
 
 ## Requirements 
-- Node.js 18+ (Recommended 20)
-- npm or yarn
-- Git
+- Node.js 18+
+- npm
 - quire CLI installed
 - Claude Desktop
 
@@ -47,13 +46,51 @@ Add the following to the config file:
 
 ```
 {
+  ...
   "mcpServers": {
     "quire": {
       "command": "node",
-      "args": ["/absolute/path/to/qr-mcp-server/build/index.js"]
+      "args": ["/absolute/path/to/qr-mcp-server/build/index.js"],
+      "env": {
+        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+      }
     }
   }
+  ...
 }
 ```
+
+##### Finding your PATH value
+The `PATH` value tells Claude Desktop where to find npm and npx. It varies depending on how Node was installed on your system.
+
+Run the following in your terminal to find the correct value:
+
+MacOS/Linux
+```
+echo $PATH
+```
+Windows
+```
+echo %PATH%
+```
+
+Copy the output and replace the PATH value in the config above with your own.
+
+##### Common PATH values by setup
+| Setup | PATH to add |
+| ----- | ----------- |
+| Homebrew (macOS) | /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin |
+| nvm | ~/.nvm/versions/node/v20.x.x/bin:/usr/bin:/bin |
+| Windows | C:\Program Files\nodejs |
+
+Note: If you're unsure which applies to you, run `which npx` (macOS/Linux) or `where npx` (Windows) in your terminal. 
+
+This returns the full path to the binary:
+
+`e.g. /opt/homebrew/bin/npx`
+
+Remove the `/npx` from the filename and insert the remaining path to your PATH config.
+
+`e.g. /opt/homebrew/bin`
 
 Replace `/absolute/path/to/quire-mcp/index.js` with the actual path on your machine. After saving and restarting Claude Desktop, you should see the 🔨 Icon in the chat interface including the Quire tools which are available.
