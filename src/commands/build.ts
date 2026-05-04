@@ -1,4 +1,4 @@
-import { exec, execFile } from 'child_process';
+import { execFile } from 'child_process';
 import { z } from 'zod';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -9,7 +9,7 @@ const nodeModulesExists = (projectPath: string): boolean =>
   existsSync(join(projectPath, 'node_modules'));
 
 const runInstall = (cwd: string): Promise<void> => {
-    const binary = isWindowsPlatform() ? 'npm.exe' : 'npm'
+    const binary = isWindowsPlatform() ? 'npm.cmd' : 'npm'
     return new Promise((resolve, reject) => {
         execFile(binary, ['install'], { cwd, shell: false}, (error) => {
             if(error) { reject(error); return; }
@@ -19,7 +19,7 @@ const runInstall = (cwd: string): Promise<void> => {
 };
 
 const runBuild = (cwd: string): Promise<string> => {
-    const binary = isWindowsPlatform() ? 'npx.exe' : 'npx'
+    const binary = isWindowsPlatform() ? 'npx.cmd' : 'npx'
     return new Promise((resolve, reject) => {
         execFile(binary, ['quire', 'build'], { cwd, shell: false }, (error) => {
             if (error) { reject(error); return; }
@@ -27,7 +27,8 @@ const runBuild = (cwd: string): Promise<string> => {
             const siteExists = existsSync(join(cwd, '_site'));
             const epubExists = existsSync(join(cwd, '_epub'));
             if (!siteExists && !epubExists) {
-                throw new Error(`Build completed but no output found in "${cwd}". Expected "_site" or "_epub" directory.`);
+                reject(new Error(`Build completed but no output found in "${cwd}". Expected "_site" or "_epub" directory.`));
+                return;
             }
 
             resolve(`Successfully built project in "${cwd}"`);
@@ -39,7 +40,7 @@ const buildQuireProject = async (projectPath: string) => {
     if(!nodeModulesExists(projectPath)) {
         await runInstall(projectPath);
     }
-    await runBuild(projectPath);
+    return await runBuild(projectPath);
 };
 
 export const buildQuireProjectTool = {
@@ -55,9 +56,9 @@ export const buildQuireProjectTool = {
         try {
             const resolvedProject = resolveProjectPath(projectPath, projectName);
 
-            await buildQuireProject(resolvedProject);
+            const result = await buildQuireProject(resolvedProject);
             return {
-                content: [{ type: 'text' as const, text: `Successfully built quire project: ${projectName}` }]
+                content: [{ type: 'text' as const, text: result }]
             };
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
