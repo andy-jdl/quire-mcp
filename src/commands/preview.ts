@@ -1,23 +1,31 @@
 import { z } from 'zod';
-import { platform } from 'os';
 import { ChildProcess, exec, spawn } from 'child_process';
 import { resolveProjectPath } from '../util/resolveProjectPath.js';
+import { isWindowsPlatform } from '../util/resolvePlatform.js';
 
 export var previewProcess: ReturnType<typeof exec> | null = null;
 
 const previewQuireProject = (projectPath: string): ChildProcess => {
-    const isWindows = platform() === 'win32'; 
-    const shell = isWindows ? 'cmd.exe' : '/bin/sh';
-
     if(previewProcess && !previewProcess.killed) {
        try { previewProcess.kill(); } catch (error) { /* Intentionally blank. */ }
     }
 
-    const command = `npx quire preview`;
-    const child = spawn(command, { cwd: projectPath, shell, detached: !isWindows, stdio: 'ignore' });
+    const isWindows = isWindowsPlatform();
+
+    const binary = isWindows ? 'npx.cmd' : 'npx';
+    const args = ['quire', 'preview'];
+    const child = spawn(
+        binary, 
+        args, 
+        { 
+            cwd: projectPath, 
+            shell: false, 
+            detached: !isWindows, 
+            stdio: 'ignore' 
+        }
+    );
 
     if(!isWindows) child.unref();
-
     previewProcess = child;
     return child;
 };
