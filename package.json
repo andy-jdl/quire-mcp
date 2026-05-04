@@ -1,6 +1,6 @@
 {
-    "name": "quire-mcp",
-    "version": "1.0.5",
+    "name": "@quire-community/quire-mcp",
+    "version": "1.0.0",
     "type": "module",
     "bin": {
         "quire-mcp": "build/index.js"
