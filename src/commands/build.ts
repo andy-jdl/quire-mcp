@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { join } from 'path';
 import { platform } from 'os';
 import { existsSync } from 'fs';
-import { resolveProjectPath } from '../util/resolve.js';
+import { resolveProjectPath } from '../util/resolveProjectPath.js';
 
 const buildQuireProject = async (projectPath: string) => {
     if (!existsSync(projectPath)) {

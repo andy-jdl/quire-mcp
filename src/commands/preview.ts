@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { platform } from 'os';
 import { ChildProcess, exec, spawn } from 'child_process';
-import { resolveProjectPath } from '../util/resolve.js';
+import { resolveProjectPath } from '../util/resolveProjectPath.js';
 
 export var previewProcess: ReturnType<typeof exec> | null = null;
 

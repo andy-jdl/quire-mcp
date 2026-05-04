@@ -1,6 +1,7 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
+import { isWindowsPlatform } from '../util/resolvePlatform.js';
 import { homedir } from 'os';
-import { join, resolve as resolvePath } from 'path';
+import { dirname, join, resolve as resolvePath } from 'path';
 import { z } from 'zod';
 
 export var lastCreatedProjectPath: string = "";
@@ -8,21 +9,34 @@ export const setLastCreatedProjectPath = (path: string) => {
     lastCreatedProjectPath = path;
 }
 
-const createNewQuireProject = async (projectName: string, folder: string = '.', starterTemplate?: string) => {
-    const resolvedFolder = folder === '.' ? process.cwd() : resolvePath(homedir(), folder);
-    const projectPath = join(resolvedFolder, projectName);
-    const starter = starterTemplate ? ` ${starterTemplate}` : '';
-    const command = `quire new "${projectPath}"${starter}`;
+const DEFAULT_PROJECTS_DIR = join(homedir(), 'quire-projects');
+
+/**
+ * @param resolvedFolder // where to run `quire new projectName`
+ * @param projectPath // stored after creation for reference
+ * @param args // ['quire', 'new', projectName, ...optional starterTemplate]
+ * @returns 
+ */
+const createNewQuireProject = async (
+    resolvedFolder: string, 
+    projectPath: string, 
+    args: string[]
+) => {
+    const binaryCommand = isWindowsPlatform() ? 'npx.cmd' : 'npx';
 
     return new Promise((resolve, reject) => {
-        exec(command, { cwd: resolvedFolder, timeout: 60000 }, (error) => {
-            if (error) {
-                reject(`Error creating project: ${error.message}`);
+        return execFile(binaryCommand, args, {cwd: dirname(resolvedFolder), shell:false}, (error) => {
+            if(error){
+                reject(error);
                 return;
+            } 
+            try {
+                setLastCreatedProjectPath(projectPath);
+                resolve(`Successfully created new project: ${projectPath}`);
+            } catch (err) {
+                reject(err);
             }
-            setLastCreatedProjectPath(projectPath);
-            resolve(`Successfully created project "${projectName}" in "${resolvedFolder}"`);
-        });
+        })
     });
 };
 
@@ -38,10 +52,15 @@ export const createNewQuireProjectTool = {
     },
     handler: async ({ projectName, folder, starterTemplate }: { projectName: string, folder?: string, starterTemplate?: string }) => {
         try {
-            const name = projectName.replace(/\s+/g, '-');
-            await createNewQuireProject(name, folder, starterTemplate);
+            const resolvedFolder = folder ? resolvePath(homedir(), folder) : DEFAULT_PROJECTS_DIR;            
+            const projectPath = join(resolvedFolder, projectName);
+
+            const args = ['quire', 'new', projectName];
+            if(starterTemplate) args.push(starterTemplate);
+
+            await createNewQuireProject(resolvedFolder ,projectPath, args);
             return {
-                content: [{ type: 'text' as const, text: `Successfully created quire project: ${name} in (${folder || process.cwd()})` }]
+                content: [{ type: 'text' as const, text: `Successfully created quire project: ${projectName} in ${resolvedFolder}` }]
             };
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
