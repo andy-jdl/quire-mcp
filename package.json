@@ -1,10 +1,9 @@
 {
-    "name": "qr-mcp-server",
-    "version": "1.0.0",
-    "private": true,
+    "name": "@quire-community/quire-mcp",
+    "version": "1.0.1",
     "type": "module",
     "bin": {
-        "qr-mcp-server": "./build/index.js"
+        "quire-mcp": "build/index.js"
     },
     "scripts": {
         "build": "tsc",
@@ -12,7 +11,7 @@
         "inspect": "npm run build && npx @modelcontextprotocol/inspector node ./build/index.js"
     },
     "files": [
-        "build"
+        "build/"
     ],
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.27.1",
