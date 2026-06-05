@@ -1,13 +1,17 @@
 import { previewProcess } from "./preview.js"
 import { platform } from 'os';
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 const resolvePidsToKill = (): number[] => {
     const isWindows = platform() === 'win32';
-    const command = isWindows ? 'netstat -ano | find ":8080" | find "LISTEN"' : 'lsof -ti tcp:8080 -sTCP:LISTEN';
-    const shell = isWindows ? 'cmd.exe' : '/bin/sh';
     try { 
-        const output = execSync(command, { shell }).toString().trim();
+        let output: string;
+        if (isWindows) {
+            const netstatOutput = execFileSync('netstat', ['-ano'], { shell: false }).toString().trim();
+            output = netstatOutput.split('\n').filter(line => line.includes(':8080') && line.includes('LISTEN')).join('\n');
+        } else {
+            output = execFileSync('lsof', ['-ti', 'tcp:8080', '-sTCP:LISTEN'], { shell: false }).toString().trim();
+        }
         return output ? output.split('\n').map(Number).filter(pid => !isNaN(pid)) : [];
     } catch(error) {
         return [];
