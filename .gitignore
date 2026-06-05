@@ -4,3 +4,5 @@ node_modules/
 # Build output
 build/
 dist/
+
+.DS_Store

@@ -3,8 +3,11 @@ import { homedir } from "os";
 import { existsSync } from "fs";
 import { join, normalize, resolve } from "path";
 
-const ALLOWED_ROOT = resolve(homedir());
-const DEFAULT_PROJECTS_DIR = join(homedir(), 'quire-projects');
+// Restrict allowed root to the user's Documents directory and set the default
+// projects directory under Documents to avoid creating projects at the home root.
+const DOCUMENTS_DIR = join(homedir(), 'Documents');
+const ALLOWED_ROOT = resolve(DOCUMENTS_DIR);
+const DEFAULT_PROJECTS_DIR = join(DOCUMENTS_DIR, 'quire-projects');
 
 const assertSafePath = (resolvedPath: string): string => {
   const normalized = normalize(resolvedPath);
