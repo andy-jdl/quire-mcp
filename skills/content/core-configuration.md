@@ -4,40 +4,43 @@ description: Brief guide to editing your quire publication.
 ---
 
 ## Overview
-Quire resolves content from the `content` diretory to generate html pages using 11ty. This directory contains editable `.yml` and `.md` files to represent a page in your publication. Quire uses 11ty shortcodes to dynamically render content from the associated `.yml` parameters.  
+Quire resolves content from the `content` directory to generate HTML pages using 11ty. This directory contains editable `.yml` and `.md` files that represent pages in your publication. Quire uses 11ty shortcodes to dynamically render content from the associated `.yml` parameters.
 
 ## Do
-- Always confirm with before editing their files.
-- Ensure you are editing the appropriate yaml file for publication configurations and markdown file for resolved content.
-- If the user is expressing broken content, ensure resolved content at the sources provided within the project directory.
+- Always confirm with the user before editing their files.
+- Ensure you are editing the appropriate YAML file for publication configurations and markdown file for resolved content.
+- If the user is reporting broken content, verify that content resolves correctly from the sources provided within the project directory.
 
-## Don't 
+## Don't
 - Do not make edits without confirming with the user.
-- Do not invent fields to configuration files. Use exisitng examples or directory level understanding.
+- Do not invent fields in configuration files. Use existing entries or directory-level understanding as reference.
+- Do not touch `_computed`, `config.yml`, or `.eleventy.js` unless explicitly asked.
 
 ## Content Directory Structure
-`/_data` - files for configuring the structure of your publication can be found under.
-`/_assets` - This directory includes stylistic configurations and images used to resolve under `_data`
-`_computed` - This file includes an `eleventyComputed.js` file for TODO
-`catalogue` - This directory includes markdown files that resovle content from objects.yaml
-`./` - Within root content directory, there are markdown files that used to generate 11ty html pages. This files use basic HTML and 11ty shortcodes to create publication pages.
+- `/_data` — YAML configuration files for structuring your publication.
+- `/_assets` — Stylistic configurations and images referenced by `_data` files.
+- `/_computed` — Contains `eleventyComputed.js` for derived template values. Do not edit unless explicitly asked.
+- `/catalogue` — Markdown files that resolve content from `objects.yaml`.
+- `./` — Root-level markdown files used to generate 11ty HTML pages using HTML and shortcodes.
 
 ## Custom Content
-Changes can be made to `custom.js` and `custom.css` to include extra functionality or styling to your publication.
+Changes can be made to `custom.js` and `custom.css` to add extra functionality or styling to your publication.
 
 ### Config
-Config.yml serves as an abstraction layer for 11ty's Configuration API. Editing entries here may involve changing ouput directory, different styling for registered shortcodes. 
+`config.yml` serves as an abstraction layer for 11ty's Configuration API. Edits here may affect output directory, shortcode styling, and other build behaviors.
 
-Do: If a user would like to edit how a shortcode behaves, suggest to access the `content/_data` file and make minor edits there. Always confirm with the user before executing. Kill and restart the server and ask user to check changes.
+Do: If a user wants to change how a shortcode behaves, suggest editing `content/_data`. Always confirm before executing. Restart the server and ask the user to verify changes.
+
+---
 
 ### Figures
+`figures.yml` resolves images, audio, video, and tables.
+- Images live under `content/images`.
+- Audio and video require a `media_id` and `media_type` to resolve via external APIs. The `media_id` can be found in the URL of the hosted media.
 
-Figures.yml is used to resolve images/audio/video/tables. 
-Images live under `content/images`. Audio and video need a media_id and media_type to resolve using external APIs. Media_IDs can be gathered from the url host site. 
+**Do: Before adding a figure, ask the user which type it is: image, image with variants, video, or audio. Use the matching definition below.**
 
-Do: If a user would like to add a figure, clarify which kind of figure is to be added? 
-
-##### Images
+#### Image
 | Property | Type Expected |
 |----------|---------------|
 | `id` | `string` |
@@ -46,7 +49,7 @@ Do: If a user would like to add a figure, clarify which kind of figure is to be 
 | `credit` | `string` |
 | `alt` | `string` |
 
-##### Image with variants
+#### Image with Variants
 | Property | Type Expected |
 |----------|---------------|
 | `id` | `string` |
@@ -59,7 +62,7 @@ Do: If a user would like to add a figure, clarify which kind of figure is to be 
 | `annotations[].items[].src` | `string` (file path) |
 | `annotations[].items[].label` | `string` |
 
-##### Video
+#### Video
 | Property | Type Expected |
 |----------|---------------|
 | `id` | `string` |
@@ -71,7 +74,7 @@ Do: If a user would like to add a figure, clarify which kind of figure is to be 
 | `credit` | `string` |
 | `alt` | `string` |
 
-##### Audio 
+#### Audio
 | Property | Type Expected |
 |----------|---------------|
 | `id` | `string` |
@@ -80,8 +83,12 @@ Do: If a user would like to add a figure, clarify which kind of figure is to be 
 | `label` | `string` |
 | `caption` | `string` (markdown and URLs supported) |
 
+---
+
 ### Objects
-Objects.yaml is used to populate Collection catalogues. Object pages may include images, data about it and essay analysis or text. To add objects to your publication, use the following definition.
+`objects.yaml` populates collection catalogue pages. Object entries may include images, metadata, and essay content.
+
+Each new entry must go under the `object_list` field. The display order of metadata fields (the tombstone) is configured via `object_display_order` in `objects.yaml`.
 
 | Property | Type Expected |
 |----------|---------------|
@@ -94,49 +101,68 @@ Objects.yaml is used to populate Collection catalogues. Object pages may include
 | `location` | `string` |
 | `link` | `string` (URL) |
 | `figure` | `array` |
-| `figure[].id` | `string` (reference to figure id) |
+| `figure[].id` | `string` (reference to a figure `id` in figures.yml) |
 
-A user can configure the order in which information is displayed (often called a tombstone) by adjusting the `object_display_order` field within Object.yaml.
-Each new entry should go under the `objects_list` field
+---
 
 ### Publication
-This file contains configurable publication detail fields. A user would want to make edits to this page when they are ready to publish, have contributors to credit as well as any resources and licensing for their publication.
+`publication.yaml` contains publication-level metadata. A user would edit this when preparing to publish, crediting contributors, or adding licensing and resource information.
+
+---
 
 ### References
-This file contains references to edit. A user would want to edit this when they want to reference other works. 
+`references.yaml` contains cited works. A user would edit this when they want to reference external works within their publication.
 
 | Property | Type Expected |
 |----------|---------------|
 | `id` | `string` |
 | `full` | `string` (markdown supported) |
 
-## Editing Markdown Content
-Markdown are used to generate structured HTML pages. They may use a blend of liquid and shortcodes. All markdown files must have have the following `Page FrontMatter` to render correctly.
-
-e.g.
 ---
-label: I
+
+## Editing Markdown Content
+Markdown files generate structured HTML pages using a blend of Liquid templating and shortcodes. All markdown files must include a frontmatter block at the top to render correctly.
+
+**Example:**
+```yaml
+---
 title: American Photographs
-subtitle: Evans in Middletown
 layout: essay
 order: 30
 ---
+```
 
-- title: Title of the html page
-- layout: changes the structure of the page that corresponds to its `.liquid` file. 
-- order: Order in which the content appears in. Defaults to alphabetical.
+### Core Frontmatter Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| `title` | `string` | Title of the HTML page |
+| `layout` | `string` (enum) | Liquid template used to render the page |
+| `order` | `integer` | Position in publication navigation. Defaults to alphabetical if omitted. |
+
+**Available `layout` values:**
+`page` (default), `essay`, `entry`, `cover`, `table-of-contents`, `bibliography`, `splash`, `objects-page`
+
+### Additional Frontmatter Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| `presentation` | `string` (enum) | `toc`: `list` (default), `brief`, `abstract`, `grid` — `entry`: `landscape` (default), `side-by-side` |
+| `outputs` | `array` | Formats to include: `epub`, `pdf`, `html` |
+| `toc` | `boolean` | Whether page appears in the publication Table of Contents |
+| `menu` | `boolean` | Whether page appears in the publication menu |
+
+Always ask the user for clarification when editing markdown files. If the task is unclear, request an example markdown file from the user before proceeding.
+
+Quire publications support sub-sections by nesting related markdown files inside a subdirectory within the `content` directory.
+
+---
 
 ## Shortcodes
-Short codes are used to render components dynamically with content. Here is an example of the figures shortcode for resolving images within a markdown file.
+Shortcodes dynamically render components using content from YAML files.
 
-```
-... whatever." ({% cite 'Evans 1938' %})
-
+**Figure shortcode** — resolves a figure from `figures.yml` by `id`:
 {% figure 'vid-1' %}
 
-## Documenting American Life
+**Cite shortcode** — resolves a reference from `references.yaml` by `id`:
+{% cite 'Evans 1938' %}
 
-Because his pictures had been issued by the agency with..
-```
-
-Quire requires new shortcodes to be registerd in eleventy configuration API.
+Available shortcodes can be found in the `_plugins` directory. New shortcodes must be registered in `.eleventy.js`.
