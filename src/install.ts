@@ -1,6 +1,6 @@
 import { execFileSync } from 'child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname, normalize, resolve } from 'path';
+import { join, dirname, normalize, resolve, sep } from 'path';
 import { homedir, platform } from 'os';
 import { createInterface } from 'readline';
 
@@ -8,7 +8,14 @@ const isWindowsPlatform = (): boolean => platform() === 'win32';
 
 // --- Path Safety --------------------------------------------------------------
 
-const ALLOWED_ROOT = resolve(homedir());
+const getDocumentsDir = (): string => {
+  const os = platform();
+  if (os === 'win32') return join(process.env.USERPROFILE ?? homedir(), 'Documents');
+  if (os === 'darwin') return join(homedir(), 'Documents');
+  return join(homedir(), 'Documents'); // XDG doesn't have a standard, fallback
+};
+
+const ALLOWED_ROOT = resolve(getDocumentsDir()) + sep; // sep from 'path'
 
 const assertSafePath = (resolvedPath: string): string => {
   const normalized = normalize(resolvedPath);
@@ -20,14 +27,22 @@ const assertSafePath = (resolvedPath: string): string => {
 
 // --- User Prompt --------------------------------------------------------------
 
+const PROMPT_TIMEOUT_MS = 30_000;
+
 const promptUser = (question: string): Promise<string> => {
   const rl = createInterface({
     input: process.stdin,
-    output: process.stderr  // stderr keeps stdout clean for MCP
+    output: process.stderr
   });
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      rl.close();
+      reject(new Error('Prompt timed out after 30 seconds. Use --non-interactive mode.'));
+    }, PROMPT_TIMEOUT_MS);
+
     rl.question(question, (answer) => {
+      clearTimeout(timer);
       rl.close();
       resolve(answer.trim());
     });
@@ -97,25 +112,33 @@ const captureInstallerPath = (): string => {
   return path;
 };
 
-const getMcpEntry = (projectsDir: string, envPath: string) => ({
+// In getMcpEntry, don't capture PATH at install time at all
+const getMcpEntry = (projectsDir: string) => ({
   command: 'quire-mcp',
   args: [],
   env: {
-    PATH: envPath,
     QUIRE_PROJECTS_DIR: projectsDir
+    // No PATH — Claude Desktop inherits the shell's PATH naturally
   }
 });
 
 const readConfig = (configPath: string): Record<string, any> => {
   if (!existsSync(configPath)) return { mcpServers: {} };
+
+  const raw = readFileSync(configPath, 'utf-8');
+
   try {
-    const raw = readFileSync(configPath, 'utf-8');
     const parsed = JSON.parse(raw);
     if (!parsed.mcpServers) parsed.mcpServers = {};
     return parsed;
-  } catch {
-    console.error('Warning: existing config was invalid JSON -- quire entry will be appended.');
-    return { mcpServers: {} };
+  } catch (err) {
+    const backupPath = `${configPath}.bak-${Date.now()}`;
+    writeFileSync(backupPath, raw, 'utf-8');
+    throw new Error(
+      `Existing config at ${configPath} is invalid JSON.\n` +
+      `A backup has been saved to ${backupPath}.\n` +
+      `Fix the file manually, then re-run the installer.`
+    );
   }
 };
 
@@ -195,7 +218,7 @@ export const runInstaller = async (): Promise<void> => {
   }
 
   // Append/overwrite quire entry -- all other mcpServers entries are preserved
-  config.mcpServers.quire = getMcpEntry(projectsDir, envPath);
+  config.mcpServers.quire = getMcpEntry(projectsDir);
   writeConfig(configPath, config);
 
   // Step 4 -- Done
