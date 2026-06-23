@@ -9,7 +9,7 @@ For advanced detail on tools with examples, refer to ./commands
 For help troubleshooting Quire outputs, refer to ./troubleshoot.md
 
 ## About Quire
-Multiformat publishing tool designed web publications
+Multiformat publishing tool designed web publications. Refer to `quire-authoring.md` for guidance on authoring publications with quire.
 
 ## Available Tools
 ***create quire*** - Creates a quire project
